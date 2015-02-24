@@ -5,20 +5,53 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 
 This file creates your application.
 """
-
+import os
 from app import app
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, jsonify
+from app.models import UserSchema
+from app.models import User
+from app import db
+import time
+from . forms import profile_form
+import random
+import json
+#from app.models import UserSchema
+
+'''Function declaration'''
+def timeinfo():
+  now = time.strftime("%a, %b %d 20%y")
+  return now
 
 
 ###
 # Routing for your application.
 ###
+@app.route('/theform',methods=["GET","POST"])
+
+def theform():
+  form = profile_form()
+  if request.method == 'POST':
+    userid = randint('000000000,99999999')
+    #pic = 'octocat.png'
+    new_user = User(userid,form.firstname.data,form.lastname.data,form.age.data,form.sex.data)
+    db.session.add(new_user)
+    db.session.commit()
+  return render_template('profileform.html', form=form)
 
 @app.route('/')
 def home():
     """Render website's home page."""
     return render_template('home.html')
 
+
+@app.route('/_get_current_user')
+def get_current_user():
+  username = "bob"
+  email = "bob@example.com"
+  id = "3424324"
+  return jsonify(username=username,
+                   email=email,
+                   id=id)
 
 @app.route('/about/')
 def about():
@@ -53,6 +86,21 @@ def page_not_found(error):
     """Custom 404 page."""
     return render_template('404.html'), 404
 
+@app.route("/profiles/",methods=["POST", "GET"])
+def profiles():
+  '''render webpage profiles'''
+  users = db.session.query(User).all()
+  serializer = UserSchema(many=True)
+  result = serializer.dump(users)
+  return jsonify({'Users':result.data})
+
+
+@app.route("/profile/", methods=["GET"])
+def user():
+  users = db.session.query(User).first()
+  return users.firstname
+
+
 
 if __name__ == '__main__':
-    app.run(debug=True,host="0.0.0.0",port="8888")
+  app.run(debug=True, host=os.getenv("IP", '0.0.0.0'),port=int(os.getenv("PORT", 8080) ))
