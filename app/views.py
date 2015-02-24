@@ -95,8 +95,8 @@ def profiles():
   return jsonify({'Users':result.data})
 
 
-@app.route("/profile/", methods=["GET"])
-def user():
+@app.route("/profile<userid>/", methods=["GET"])
+def user(userid):
   users = db.session.query(User).first()
   return users.firstname
 
