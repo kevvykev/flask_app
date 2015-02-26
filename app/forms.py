@@ -1,6 +1,6 @@
 from flask.ext.wtf import Form
 
-from wtforms.fields import TextField,FileField,SelectField
+from wtforms.fields import TextField,FileField,SelectField,IntegerField
 
 #otherfieldsincludePasswordField
 
@@ -13,4 +13,5 @@ class profile_form(Form):
   age = TextField('age',validators=[Required()])
   sex = SelectField('sex', choices=[
         ('M','Male'),('F','Female')], validators=[Required()])
+  email = TextField('email',validators=[Required()]) 
 

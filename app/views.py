@@ -12,31 +12,22 @@ from app.models import UserSchema
 from app.models import User
 from app import db
 import time
+from datetime import datetime
 from . forms import profile_form
 import random
 import json
+from werkzeug import secure_filename
 #from app.models import UserSchema
 
 '''Function declaration'''
-def timeinfo():
-  now = time.strftime("%a, %b %d 20%y")
-  return now
 
-
+def time():
+  time = datetime.now()
+  return time
 ###
 # Routing for your application.
 ###
-@app.route('/theform',methods=["GET","POST"])
 
-def theform():
-  form = profile_form()
-  if request.method == 'POST':
-    userid = randint('000000000,99999999')
-    #pic = 'octocat.png'
-    new_user = User(userid,form.firstname.data,form.lastname.data,form.age.data,form.sex.data)
-    db.session.add(new_user)
-    db.session.commit()
-  return render_template('profileform.html', form=form)
 
 @app.route('/')
 def home():
@@ -85,21 +76,51 @@ def add_header(response):
 def page_not_found(error):
     """Custom 404 page."""
     return render_template('404.html'), 404
+  
+@app.route('/profile/',methods=["GET","POST"])
+
+def profile():
+  form = profile_form()
+
+  if request.method == 'POST':
+    if form.validate_on_submit():
+      image = request.files['image']
+      filename = secure_filename(image.filename)
+      image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))  
+      firstname = request.form['firstname']
+      lastname = request.form['lastname']
+      age = request.form['age']
+      sex = request.form['sex']
+      email = request.form['email']
+      new_user = User(filename,firstname,lastname,age,sex,email)
+      db.session.add(new_user)
+      db.session.commit()
+      return render_template('profileform.html', form=form)
+  return render_template('profileform.html', form=form)
 
 @app.route("/profiles/",methods=["POST", "GET"])
 def profiles():
   '''render webpage profiles'''
   users = db.session.query(User).all()
-  serializer = UserSchema(many=True)
-  result = serializer.dump(users)
-  return jsonify({'Users':result.data})
+  if request.method =="POST":
+    serializer = UserSchema(many=True)
+    result = serializer.dump(users)
+    return jsonify({'Users':result.data})
+  return render_template('profile.html',users=users)
 
 
-@app.route("/profile<userid>/", methods=["GET"])
+@app.route("/profile/<userid>/", methods=["GET"])
 def user(userid):
-  users = db.session.query(User).first()
-  return users.firstname
+  users = User.query.filter_by(userid=userid).first()
+  if request.method=="POST":
+    return jsonify(Age=user.age,Sex = user.sex, date= user.date, Tdollars=user.TDollars, Image= user.image, High_Score = user.high_score)
+    users = User.query.filter_by(userid=userid).first()
+  return render_template('singleprofile.html', user = users)
 
+
+
+   
+   
 
 
 if __name__ == '__main__':

@@ -41,7 +41,7 @@
 </style>
 
 
-{%for user in users %}
+
 <div class = 'container'>
  
  <div class ='profilePic'>
@@ -51,7 +51,7 @@
 
     
 <div class = "name">
-  <h1> <a href="../profile/{{user.userid}}">{{user.firstname}}  {{user.lastname}}</a></h1>
+      <h1> {{user.firstname}}  {{user.lastname}}</h1>
       </div>
 
 <div class='time'>
@@ -68,4 +68,3 @@
               <p> TDollar:{{user.TDollars}}</p>
   </div>
 </div>
-  {%endfor%}
